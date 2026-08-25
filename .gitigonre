@@ -1,0 +1,15 @@
+.env
+
+mysql/data/
+redis/data/
+
+backup/mysql/
+*.log
+
+__pycache__/
+*.pyc
+
+.idea/
+.vscode/
+
+.DS_Store

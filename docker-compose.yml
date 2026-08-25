@@ -1,0 +1,104 @@
+version: "3"
+
+services: 
+  mysql: 
+    image: mysql:8.0
+    container_name: company-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    volumes:
+            - ./mysql/data:/var/lib/mysql
+    ports:
+            - "3306:3306"
+    networks:
+      - company-network
+
+  redis:
+        image: redis:7.0
+        container_name: company-redis
+        restart: always
+        ports:
+                - "6379:6379"
+        networks:
+          - company-network
+        command:
+                redis-server --appendonly yes
+        volumes:
+                - ./redis/data:/data
+
+  nginx: 
+        image: nginx
+        container_name: company-nginx
+        restart: always
+        ports: 
+          - "80:80"
+        volumes:
+                - ./nginx:/etc/nginx/conf.d
+        networks:
+          - company-network
+  backend:
+          build:
+            context: ./backend
+          container_name: company-backend
+          restart: always
+          ports:
+                  - "8080:8080"
+          networks:
+            - company-network
+  node-exporter:
+          image: prom/node-exporter:v1.8.2
+          container_name: node-exporter
+          restart: always
+          ports:
+                  - "9100:9100"
+          volumes:
+                  - /proc:/host/proc:ro
+                  - /sys:/host/sys:ro
+                  - /:/rootfs:ro
+          command:
+                  - '--path.procfs=/host/proc'
+                  - '--path.sysfs=/host/sys'
+                  - '--path.rootfs=/rootfs'
+          networks:
+                  - company-network
+  prometheus:
+          image: prom/prometheus:v2.53.0
+          container_name: prometheus
+          restart: always
+          ports:
+                  - "9090:9090"
+          volumes:
+                  - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+          networks:
+                  - company-network
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./monitoring/grafana:/var/lib/grafana
+    networks:
+      - company-network
+
+  cadvisor:
+          image: ghcr.io/google/cadvisor:0.55.1
+          container_name: cadvisor
+          restart: always
+          ports:
+                  - "8081:8080"
+          volumes:
+                  - /:/rootfs:ro
+                  - /var/run:/var/run:ro
+                  - /sys:/sys:ro
+                  - /var/lib/docker/:/var/lib/docker:ro
+                  - /dev/disk/:/dev/disk:ro
+          networks:
+                  - company-network 
+
+networks:
+          company-network:
+                  driver: bridge 
