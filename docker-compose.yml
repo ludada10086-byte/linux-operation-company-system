@@ -43,6 +43,9 @@ services:
             context: ./backend
           container_name: company-backend
           restart: always
+          environment:
+              MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+              MYSQL_DATABASE: ${MYSQL_DATABASE}
           ports:
                   - "8080:8080"
           networks:
