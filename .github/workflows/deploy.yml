@@ -30,5 +30,5 @@ jobs:
                                           echo " service status"
                                           docker ps
                                           echo "health check"
-                                          curl -f http://127.0.0.1/heath
+                                          curl -f http://127.0.0.1/health
                                           echo "=== Deploy completed ==="
