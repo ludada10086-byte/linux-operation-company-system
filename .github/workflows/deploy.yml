@@ -1,0 +1,34 @@
+name: Deploy Company Ststem
+
+on:
+        push:
+                branches:
+                        - main
+jobs:
+        deploy:
+                runs-on: ubuntu-latest
+                steps:
+                        - name: Chectout
+                          uses: actions/checkout@v4
+                        - name: Deploy Server
+                          uses: appleboy/ssh-action@v1.0.3
+                          with:
+                                  host: ${{ secrets.SERVER_HOST }}
+                                  username: root
+                                  key: ${{ secrets.SERVER_SSH_KEY }}
+                                  script: |
+                                          set -e
+                                          cd /opy/company-app/company-system
+                                          echo "pull latest code"
+                                          git pull origin main
+                                          echo "validate compose config"
+                                          docker compose config
+                                          echo "build backend"
+                                          docker compose build backend
+                                          echo "start setvices"
+                                          docker compose up -d
+                                          echo " service status"
+                                          docker ps
+                                          echo "health check"
+                                          curl -f http://127.0.0.1/heath
+                                          echo "=== Deploy completed ==="
